@@ -1,0 +1,154 @@
+
+
+*{
+    margin: 0;
+    padding: 0;
+}
+
+
+.nav{
+    width: 310px;
+    height: 50px;
+    position: relative;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    opacity: .3;
+    transition: opacity .5s;
+}
+
+.dir *{
+    height: 30px;
+    width: 30px;
+    background-color: blue;
+    border-radius: 50%;
+    border: 3px solid rgb(214, 214, 214);
+    transition: transform .5s;
+}
+
+.N{
+    background-color: #000;
+}
+.E{
+    background-color: #EF626C;
+}
+.S{
+    background-color: #fdec03;
+}
+.W{
+    background-color: #24d102;
+}
+
+button{
+    border: none;
+    outline: none;
+    padding: .6em 1em;
+    border-radius: 3px;
+    background-color: #03bb56;
+    color: #fff;
+}
+.save{
+    background-color: #0f65d4;
+}
+
+/* Add this to your style.css file */
+
+canvas {
+    border: 35px solid #2b2b2b;
+    border-radius: 50%;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 500px;
+    height: 500px;
+    box-shadow: 
+        inset 0 0 50px rgba(0,0,0,0.6),
+        0 0 50px rgba(0,0,0,0.5);
+    background-color: #a5d8ff;
+    z-index: 1; /* Add this */
+}
+
+/* Add individual bolt holes */
+.porthole-frame {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 570px;
+    height: 570px;
+    border-radius: 50%;
+    z-index: 2;
+    pointer-events: none;
+}
+
+.bolt {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background: #1a1a1a;
+    border-radius: 50%;
+    border: 3px solid #4a4a4a;
+    box-shadow: 
+        inset 0 0 5px rgba(0,0,0,0.8),
+        0 0 2px rgba(255,255,255,0.1);
+}
+
+/* Position the bolts evenly around the circle */
+.bolt:nth-child(1) { top: 0; left: 50%; transform: translate(-50%, 0); }
+.bolt:nth-child(2) { top: 10%; right: 20%; }
+.bolt:nth-child(3) { top: 25%; right: 6%; }
+.bolt:nth-child(4) { top: 50%; right: 0; transform: translate(0, -50%); }
+.bolt:nth-child(5) { bottom: 25%; right: 6%; }
+.bolt:nth-child(6) { bottom: 10%; right: 20%; }
+.bolt:nth-child(7) { bottom: 0; left: 50%; transform: translate(-50%, 0); }
+.bolt:nth-child(8) { bottom: 10%; left: 10%; }
+.bolt:nth-child(9) { bottom: 25%; left: 2%; }
+.bolt:nth-child(10) { top: 50%; left: 0; transform: translate(0, -50%); }
+.bolt:nth-child(11) { top: 25%; left: 2%; }
+.bolt:nth-child(12) { top: 10%; left: 10%; }
+
+
+/* Fix the water effect */
+.water-effect {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 500px;
+    height: 500px;
+    border-radius: 50%;
+    z-index: 3;
+    pointer-events: none;
+    background: linear-gradient(45deg, rgba(0,149,255,0.2), rgba(0,149,255,0));
+    animation: waterEffect 8s infinite ease-in-out;
+}
+
+@keyframes waterEffect {
+    0% { 
+        opacity: 0.3;
+        background: linear-gradient(45deg, rgba(0,149,255,0.2), rgba(0,149,255,0));
+    }
+    50% { 
+        opacity: 0.5;
+        background: linear-gradient(45deg, rgba(0,149,255,0.4), rgba(0,149,255,0.1));
+    }
+    100% { 
+        opacity: 0.3;
+        background: linear-gradient(45deg, rgba(0,149,255,0.2), rgba(0,149,255,0));
+    }
+}
+
+
+
+body {
+    background-color: #1a1a1a;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+}
+
+
