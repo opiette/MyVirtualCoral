@@ -5,54 +5,104 @@
     padding: 0;
 }
 
+.nav {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+}
 
-.nav{
-    width: 310px;
-    height: 50px;
+.dir {
+    display: grid;
+    grid-template-areas:
+        ". N ."
+        "W . E"
+        ". S .";
+    gap: 10px;
+}
+
+.dir > div {
+    width: 40px;
+    height: 40px;
+    background-color: rgba(255, 255, 255, 0.7);
+    border-radius: 50%;
     position: relative;
-    top: 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.N { grid-area: N; }
+.S { grid-area: S; }
+.E { grid-area: E; }
+.W { grid-area: W; }
+
+.arrow {
+    width: 0;
+    height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-bottom: 15px solid #333;
+}
+
+/* Rotate arrows for different directions */
+.N .arrow {
+    transform: rotate(0deg);
+}
+
+.E .arrow {
+    transform: rotate(90deg);
+}
+
+.W .arrow {
+    transform: rotate(-90deg);
+}
+
+.S .arrow {
+    transform: rotate(180deg);
+}
+
+/* Hover effect */
+.dir > div:hover {
+    background-color: rgba(255, 255, 255, 0.9);
+}
+
+
+
+
+..controls {
+    position: fixed;
+    top: 20px;  /* Changed from bottom to top */
     left: 50%;
     transform: translateX(-50%);
     display: flex;
-    align-items: center;
-    justify-content: space-around;
-    opacity: .3;
-    transition: opacity .5s;
+    gap: 10px;
+    z-index: 1000;
 }
 
-.dir *{
-    height: 30px;
-    width: 30px;
-    background-color: blue;
-    border-radius: 50%;
-    border: 3px solid rgb(214, 214, 214);
-    transition: transform .5s;
-}
-
-.N{
-    background-color: #000;
-}
-.E{
-    background-color: #EF626C;
-}
-.S{
-    background-color: #fdec03;
-}
-.W{
-    background-color: #24d102;
-}
-
-button{
+.controls button {
+    padding: 8px 16px;
     border: none;
-    outline: none;
-    padding: .6em 1em;
-    border-radius: 3px;
-    background-color: #03bb56;
-    color: #fff;
+    border-radius: 4px;
+    background-color: rgba(255, 255, 255, 0.8);
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s;
 }
-.save{
-    background-color: #0f65d4;
+
+.controls button:hover {
+    background-color: rgba(255, 255, 255, 0.95);
 }
+
+/* Hide the file input */
+#imageLoader {
+    display: none;
+}
+
+
+
 
 /* Add this to your style.css file */
 
@@ -105,11 +155,11 @@ canvas {
 .bolt:nth-child(5) { bottom: 25%; right: 6%; }
 .bolt:nth-child(6) { bottom: 10%; right: 20%; }
 .bolt:nth-child(7) { bottom: 0; left: 50%; transform: translate(-50%, 0); }
-.bolt:nth-child(8) { bottom: 10%; left: 10%; }
-.bolt:nth-child(9) { bottom: 25%; left: 2%; }
+.bolt:nth-child(8) { bottom: 10%; left: 20%; }
+.bolt:nth-child(9) { bottom: 25%; left: 6%; }
 .bolt:nth-child(10) { top: 50%; left: 0; transform: translate(0, -50%); }
-.bolt:nth-child(11) { top: 25%; left: 2%; }
-.bolt:nth-child(12) { top: 10%; left: 10%; }
+.bolt:nth-child(11) { top: 25%; left: 6%; }
+.bolt:nth-child(12) { top: 10%; left: 20%; }
 
 
 /* Fix the water effect */

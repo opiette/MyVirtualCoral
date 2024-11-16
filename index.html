@@ -9,31 +9,47 @@
 </head>
 <body>
     
-        <div class="porthole-frame">
-            <div class="bolt"></div>
-            <div class="bolt"></div>
-            <div class="bolt"></div>
-            <div class="bolt"></div>
-            <div class="bolt"></div>
-            <div class="bolt"></div>
-            <div class="bolt"></div>
-            <div class="bolt"></div>
-            <div class="bolt"></div>
-            <div class="bolt"></div>
-            <div class="bolt"></div>
-            <div class="bolt"></div>
-        </div>
-        <canvas id="canvas"></canvas>
-        <div class="water-effect"></div>
-    
+    <div class="porthole-frame">
+        <div class="bolt"></div>
+        <div class="bolt"></div>
+        <div class="bolt"></div>
+        <div class="bolt"></div>
+        <div class="bolt"></div>
+        <div class="bolt"></div>
+        <div class="bolt"></div>
+        <div class="bolt"></div>
+        <div class="bolt"></div>
+        <div class="bolt"></div>
+        <div class="bolt"></div>
+        <div class="bolt"></div>
+    </div>
+    <canvas id="canvas"></canvas>
+    <div class="water-effect"></div>
+
     <div class="nav">
         <div class="dir">
-            <div class="N"></div>
-            <div class="E"></div>
-            <div class="S"></div>
-            <div class="W"></div>
+            <div class="N">
+                <div class="arrow"></div>
+            </div>
+            <div class="W">
+                <div class="arrow"></div>
+            </div>
+            <div class="E">
+                <div class="arrow"></div>
+            </div>
+            <div class="S">
+                <div class="arrow"></div>
+            </div>
         </div>
     </div>
+
+    <div class="controls">
+        <button id="saveBtn">Save Drawing</button>
+        <button id="loadBtn">Load Drawing</button>
+        <input type="file" id="imageLoader" accept="image/*" style="display: none;">
+    </div>
+
+                
     
     <script src="MyVirtualCoral.js"></script>
 </body>
