@@ -22,10 +22,9 @@
         <div class="bolt"></div>
         <div class="bolt"></div>
         <div class="bolt"></div>
+        <canvas id="canvas"></canvas>
+        <div class="water-effect"></div>
     </div>
-    <canvas id="canvas"></canvas>
-    <div class="water-effect"></div>
-
     <div class="nav">
         <div class="dir">
             <div class="N">
@@ -47,6 +46,11 @@
         <button id="saveBtn">Save Drawing</button>
         <button id="loadBtn">Load Drawing</button>
         <input type="file" id="imageLoader" accept="image/*" style="display: none;">
+        
+        <button id="loadS3Btn">Load from S3</button>
+        <input type="text" id="s3ImageKey" name="s3ImageKey" size="30" placeholder="Enter image key">
+        <input type="text" id="x" size="5">
+        <input type="text" id="y" size="5">
     </div>
 
                 

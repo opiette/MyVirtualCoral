@@ -1,0 +1,20 @@
+
+Copyright Owen Piette 11/2024
+
+- You can see the whole reef in another window.
+- Users can edit a coral with a passphrase, which loads up a location, which is a coordinate on the reef.
+    Or they can enter a coordinate and type in a passphrase. If it isn't already taken.
+- The location is saved every 1 minute of use after moving. 
+    Doesn't save if left alone. Doesn't change if in background.
+
+- Need to balance growth with death.
+- Get more coral / food / fish when you answer questions right.
+
+- Add second layer of fish that generate on coral, total number is based on how much coral youhave.
+- Fish poop out food.
+
+- Initial image will be a real, dead coral reef!
+
+- The whole thing resets every ... ? Or maybe grows to different reefs?
+
+

@@ -70,8 +70,6 @@
 }
 
 
-
-
 ..controls {
     position: fixed;
     top: 20px;  /* Changed from bottom to top */
@@ -109,7 +107,7 @@
 canvas {
     border: 35px solid #2b2b2b;
     border-radius: 50%;
-    position: fixed;
+    position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
@@ -125,9 +123,10 @@ canvas {
 /* Add individual bolt holes */
 .porthole-frame {
     position: fixed;
-    top: 50%;
+    top: 50px;
     left: 50%;
-    transform: translate(-50%, -50%);
+    transform: translateX(-50%);
+    /* transform: translate(-50%, -50%);*/
     width: 570px;
     height: 570px;
     border-radius: 50%;
@@ -135,36 +134,10 @@ canvas {
     pointer-events: none;
 }
 
-.bolt {
-    position: absolute;
-    width: 20px;
-    height: 20px;
-    background: #1a1a1a;
-    border-radius: 50%;
-    border: 3px solid #4a4a4a;
-    box-shadow: 
-        inset 0 0 5px rgba(0,0,0,0.8),
-        0 0 2px rgba(255,255,255,0.1);
-}
-
-/* Position the bolts evenly around the circle */
-.bolt:nth-child(1) { top: 0; left: 50%; transform: translate(-50%, 0); }
-.bolt:nth-child(2) { top: 10%; right: 20%; }
-.bolt:nth-child(3) { top: 25%; right: 6%; }
-.bolt:nth-child(4) { top: 50%; right: 0; transform: translate(0, -50%); }
-.bolt:nth-child(5) { bottom: 25%; right: 6%; }
-.bolt:nth-child(6) { bottom: 10%; right: 20%; }
-.bolt:nth-child(7) { bottom: 0; left: 50%; transform: translate(-50%, 0); }
-.bolt:nth-child(8) { bottom: 10%; left: 20%; }
-.bolt:nth-child(9) { bottom: 25%; left: 6%; }
-.bolt:nth-child(10) { top: 50%; left: 0; transform: translate(0, -50%); }
-.bolt:nth-child(11) { top: 25%; left: 6%; }
-.bolt:nth-child(12) { top: 10%; left: 20%; }
-
 
 /* Fix the water effect */
 .water-effect {
-    position: fixed;
+    position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
@@ -192,6 +165,33 @@ canvas {
     }
 }
 
+
+.bolt {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background: #1a1a1a;
+    border-radius: 50%;
+    border: 3px solid #4a4a4a;
+    box-shadow: 
+        inset 0 0 5px rgba(0,0,0,0.8),
+        0 0 2px rgba(255,255,255,0.1);
+    z-index: 4;
+}
+
+/* Position the bolts evenly around the circle */
+.bolt:nth-child(1) { top: 0; left: 50%; transform: translate(-50%, 0); }
+.bolt:nth-child(2) { top: 10%; right: 20%; }
+.bolt:nth-child(3) { top: 25%; right: 6%; }
+.bolt:nth-child(4) { top: 50%; right: 0; transform: translate(0, -50%); }
+.bolt:nth-child(5) { bottom: 25%; right: 6%; }
+.bolt:nth-child(6) { bottom: 10%; right: 20%; }
+.bolt:nth-child(7) { bottom: 0; left: 50%; transform: translate(-50%, 0); }
+.bolt:nth-child(8) { bottom: 10%; left: 20%; }
+.bolt:nth-child(9) { bottom: 25%; left: 6%; }
+.bolt:nth-child(10) { top: 50%; left: 0; transform: translate(0, -50%); }
+.bolt:nth-child(11) { top: 25%; left: 6%; }
+.bolt:nth-child(12) { top: 10%; left: 20%; }
 
 
 body {
