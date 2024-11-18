@@ -17,4 +17,5 @@ Copyright Owen Piette 11/2024
 
 - The whole thing resets every ... ? Or maybe grows to different reefs?
 
+- Make the outside edges copies of the neighboring corals, but don't modify those, but do react to them!
 

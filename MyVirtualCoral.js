@@ -1,12 +1,24 @@
+//MyVirtualCoral.js Copyright Owen Piette 2025
 
-
-const canvas = document.getElementById("canvas")
-canvas.height = window.innerHeight
-canvas.width = window.innerWidth
+const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d")
+const virtualCanvas = document.createElement('canvas'); // Virtual canvas for storing full image
+const virtualCtx = virtualCanvas.getContext('2d');
+const xBox = document.getElementById("x");
+const yBox = document.getElementById("y");
+const saveBtn = document.getElementById('saveBtn');
+const loadBtn = document.getElementById('loadBtn');
+const imageLoader = document.getElementById('imageLoader');
+var pixelInterval;
+var greenRemovalInterval;
+var moveInterval;
+
+const repeatDelay = 100; // How often the movement repeats in milliseconds
+const moveAmount = 10;
+const rotateAmount = Math.PI / 36; // 5 degrees in radians
+
 let prevX = null
 let prevY = null
-ctx.lineWidth = 5
 let draw = false
 let navIntervals = {
     N: null,
@@ -14,353 +26,67 @@ let navIntervals = {
     E: null,
     W: null
 };
-const repeatDelay = 100; // How often the movement repeats in milliseconds
-
-let canvasOffsetX = 0;
-let canvasOffsetY = 0;
+let canvasOffsetX = 250;
+let canvasOffsetY = 250;
 let canvasRotation = 0; // In radians
-const moveAmount = 10;
-const rotateAmount = Math.PI / 36; // 5 degrees in radians
 let canvasState; // Store the complete canvas state
-const virtualCanvas = document.createElement('canvas'); // Virtual canvas for storing full image
-// Initialize the virtual canvas with same dimensions
-virtualCanvas.width = canvas.width;
-virtualCanvas.height = canvas.height;
-const virtualCtx = virtualCanvas.getContext('2d');
+let zoomLevel = 1;  // Level
+
+
 
 // Initialize canvas state
 function initializeCanvasState() {
+    virtualCanvas.width = 500;
+    virtualCanvas.height = 500;
+
     virtualCtx.fillStyle = '#a5d8ff';
     virtualCtx.fillRect(0, 0, virtualCanvas.width, virtualCanvas.height);
     canvasState = virtualCtx.getImageData(0, 0, virtualCanvas.width, virtualCanvas.height);
+
+    canvasOffsetX = 250;
+    canvasOffsetY = 250;
 }
 
-// Add these variables at the top with your other state variables
-let zoomLevel = 1;  // zoom
-let centerX = canvas.width / 2;
-let centerY = canvas.height / 2;
+// Add this function to define what happens on load
+function onPageLoad() {
+    //canvas.height = canvas.getBoundingClientRect.height;
+    //canvas.width = canvas.getBoundingClientRect.width;
+    canvas.width=500;
+    canvas.height=500;
+    ctx.lineWidth = 5
 
-// Modify your updateMainCanvas function to include zoom
-function updateMainCanvas() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = '#a5d8ff';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // Save the context state
-    ctx.save();
-    /*
-    // Move to center of screen
-    ctx.translate(centerX/2, centerY/2);
-    
-    // Apply zoom
-    ctx.scale(zoomLevel, zoomLevel);
-    
-    // Move back by half canvas size (adjusted for zoom)
-    ctx.translate(-centerX, -centerY);
-
-    // Apply rotation around center
-    ctx.translate(canvas.width/2, canvas.height/2);
-    ctx.rotate(canvasRotation);
-    ctx.translate(-canvas.width/2, -canvas.height/2);
-
-    // Apply pan offsets
-    ctx.translate(-canvasOffsetX, -canvasOffsetY);
-    */
-    // Draw the virtual canvas
-    ctx.drawImage(virtualCanvas, 0, 0);
-    ctx.fillRect(prevX, prevY, 10,10)
-
-    // Restore the context state
-    ctx.restore();
-}
-
-function setZoom(newZoom) {
-    zoomLevel = newZoom;
-    updateMainCanvas();
-}
-
-
-
-// ============================================================================================================
-//                                 DRAWING WITH THE MOUSE
-// ============================================================================================================
-
-
-// Set draw to true when mouse is pressed
-window.addEventListener("mousedown", (e) => draw = true)
-// Set draw to false when mouse is released
-window.addEventListener("mouseup", (e) => draw = false)
-
-
-const xBox = document.getElementById("x");
-const yBox = document.getElementById("y");
-
-// Modified drawing function
-window.addEventListener("mousemove", (e) => {
-    if(prevX == null || prevY == null || !draw){
-        prevX = e.clientX;
-        prevY = e.clientY;
-        return;
-    }
-
-    let currentX = e.clientX;
-    let currentY = e.clientY;
-
-    
-    // Get canvas position
-    const rect = canvas.getBoundingClientRect();
-
-    // Convert mouse coordinates to canvas coordinates
-    let canvasX = currentX - rect.left;
-    let canvasY = currentY - rect.top;
-    let prevCanvasX = prevX - rect.left;
-    let prevCanvasY = prevY - rect.top;
-
-    xBox.value = Math.round(canvasX).toString() + "," + Math.round(canvasY);
-
-    virtualCtx.fillRect(canvasX, canvasY, 10,10)
-
-    // Adjust for canvas center (rotation pivot point)
-    //canvasX -= canvas.width/2;
-    //canvasY -= canvas.height/2;
-    //prevCanvasX -= canvas.width/2;
-    //prevCanvasY -= canvas.height/2;
-
-    
-    // Reverse zoom
-    canvasX /= zoomLevel;
-    canvasY /= zoomLevel;
-    prevCanvasX /= zoomLevel;
-    prevCanvasY /= zoomLevel;
-
-    //xBox.value = Math.round(canvasX).toString() + "," + Math.round(canvasY);
-    
-    // Reverse rotation
-    let rotatedX = canvasX * Math.cos(-canvasRotation) - canvasY * Math.sin(-canvasRotation);
-    let rotatedY = canvasX * Math.sin(-canvasRotation) + canvasY * Math.cos(-canvasRotation);
-    let prevRotatedX = prevCanvasX * Math.cos(-canvasRotation) - prevCanvasY * Math.sin(-canvasRotation);
-    let prevRotatedY = prevCanvasX * Math.sin(-canvasRotation) + prevCanvasY * Math.cos(-canvasRotation);
-
-    // Add back canvas center offset
-    //rotatedX += canvas.width/2;
-    //rotatedY += canvas.height/2;
-    //prevRotatedX += canvas.width/2;
-    //prevRotatedY += canvas.height/2;
-
-    // Add pan offset
-    rotatedX += canvasOffsetX;
-    rotatedY += canvasOffsetY;
-    prevRotatedX += canvasOffsetX;
-    prevRotatedY += canvasOffsetY;
-
-    yBox.value = Math.round(rotatedX).toString() + "," + Math.round(rotatedY);
-
-
-    // Draw on virtual canvas
-    virtualCtx.beginPath();
-    virtualCtx.strokeStyle = ctx.strokeStyle;
-    virtualCtx.lineWidth = ctx.lineWidth;
-    virtualCtx.lineCap = ctx.lineCap;
-    virtualCtx.moveTo(prevRotatedX, prevRotatedY);
-    virtualCtx.lineTo(rotatedX, rotatedY);
-    virtualCtx.stroke();
-
-    // Update canvas state
-    canvasState = virtualCtx.getImageData(0, 0, virtualCanvas.width, virtualCanvas.height);
-    
-    // Update display
+    initializeCanvasState();
+    setZoom(1);
     updateMainCanvas();
 
-    prevX = currentX;
-    prevY = currentY;
-});
+    LoadFromAWS();
 
-
-
-
-function moveCanvas(direction) {
-    // Store the previous offset values in case we need to revert
-    const prevOffsetX = canvasOffsetX;
-    const prevOffsetY = canvasOffsetY;
-
-    // Calculate the adjusted move amount based on zoom
-    const adjustedMoveAmount = moveAmount / zoomLevel;
-
-    switch(direction) {
-        case 'N':
-            canvasOffsetX -= adjustedMoveAmount * Math.sin(canvasRotation);
-            canvasOffsetY -= adjustedMoveAmount * Math.cos(canvasRotation);
-            break;
-        case 'S':
-            canvasOffsetX += adjustedMoveAmount * Math.sin(canvasRotation);
-            canvasOffsetY += adjustedMoveAmount * Math.cos(canvasRotation);
-            break;
-        case 'E':
-            canvasRotation -= rotateAmount;
-            break;
-        case 'W':
-            canvasRotation += rotateAmount;
-            break;
-    }
-
-    // Calculate boundaries based on zoom level
-    const maxOffsetX = (virtualCanvas.width * zoomLevel - canvas.width) / (2 * zoomLevel);
-    const maxOffsetY = (virtualCanvas.height * zoomLevel - canvas.height) / (2 * zoomLevel);
-
-    // Constrain the offsets
-    canvasOffsetX = Math.max(-maxOffsetX, Math.min(maxOffsetX, canvasOffsetX));
-    canvasOffsetY = Math.max(-maxOffsetY, Math.min(maxOffsetY, canvasOffsetY));
-
-    updateMainCanvas();
+    // Start the intervals
+    pixelInterval = setInterval(drawRandomPixel, 100);
+    greenRemovalInterval = setInterval(removeGreenPixels, 100);
+    moveInterval = setInterval(moveCanvas, 100);
 }
 
+// Add this event listener to run when the DOM is fully loaded
+//document.addEventListener('DOMContentLoaded', onPageLoad);
+// Alternatively, if you need to wait for all resources (images, etc.) to load
+window.addEventListener('load', onPageLoad);
 
+function LoadFromAWS(){
 
-// Initialize the canvas
-initializeCanvasState();
+    // Create a URLSearchParams object
+    const urlParams = new URLSearchParams(window.location.search);
 
+    // Get all parameters
+    //const params = Object.fromEntries(urlParams.entries());
 
+    // Or get individual parameters
+    const filename = urlParams.get('location');
 
-// ============================================================================================================
-//                                 CONTROLS
-// ============================================================================================================
-
-
-// Add touch/mouse event listeners to nav buttons
-document.querySelectorAll('.dir div').forEach(button => {
-    // Start movement on mousedown/touchstart
-    const startMove = (e) => {
-        e.preventDefault(); // Prevent default to avoid selection
-        const direction = button.className;
-        moveCanvas(direction);
-        // Start repeating movement after a short delay
-        navIntervals[direction] = setInterval(() => {
-            moveCanvas(direction);
-        }, repeatDelay);
-    };
-
-    // Stop movement on mouseup/touchend
-    const stopMove = (e) => {
-        e.preventDefault();
-        const direction = button.className;
-        if (navIntervals[direction]) {
-            clearInterval(navIntervals[direction]);
-            navIntervals[direction] = null;
-        }
-    };
-
-    // Add event listenersAmazon Cognito identity pools to allow unauthenticated guest access
-    button.addEventListener('mousedown', startMove);
-    button.addEventListener('mouseup', stopMove);
-    button.addEventListener('mouseleave', stopMove);
-    button.addEventListener('touchstart', startMove);
-    button.addEventListener('touchend', stopMove);
-});
-
-// Add keyboard controls
-document.addEventListener('keydown', (e) => {
-    switch(e.key) {
-        case 'w':
-            moveCanvas('N');
-            break;
-        case 's':
-            moveCanvas('S');
-            break;
-        case 'd':
-            moveCanvas('E');
-            break;
-        case 'a':
-            moveCanvas('W');
-            break;
-            
-        case '+':
-        case '=':
-            setZoom(zoomLevel * 1.1); // Zoom in by 10%
-            break;
-        case '-':
-            setZoom(zoomLevel / 1.1); // Zoom out by 10%
-            break;
-        
-            
-    }
-});
-
-
-
-// ============================================================================================================
-//                                 LOADING
-// ============================================================================================================
-
-// Get button elements
-const saveBtn = document.getElementById('saveBtn');
-const loadBtn = document.getElementById('loadBtn');
-const imageLoader = document.getElementById('imageLoader');
-
-// Modified save functionality
-saveBtn.addEventListener('click', () => {
-    // Use virtual canvas for saving
-    const link = document.createElement('a');
-    link.download = 'my-drawing.png';
-    link.href = virtualCanvas.toDataURL('image/png');
-    link.click();
-});
-
-// Load button click handler
-loadBtn.addEventListener('click', () => {
-    imageLoader.click();
-});
-
-
-// Modified image loading function
-imageLoader.addEventListener('change', (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
     
-    reader.onload = (e) => {
-        const img = new Image();
-        
-        img.onload = () => {
-            // Reset position and rotation
-            canvasOffsetX = 0;
-            canvasOffsetY = 0;
-            canvasRotation = 0;
-            
-            // Clear virtual canvas
-            virtualCtx.clearRect(0, 0, virtualCanvas.width, virtualCanvas.height);
-            virtualCtx.fillStyle = '#a5d8ff';
-            virtualCtx.fillRect(0, 0, virtualCanvas.width, virtualCanvas.height);
-            
-            // Calculate scaling
-            const scale = Math.min(
-                virtualCanvas.width / img.width,
-                virtualCanvas.height / img.height
-            );
-            
-            const x = (virtualCanvas.width - img.width * scale) / 2;
-            const y = (virtualCanvas.height - img.height * scale) / 2;
-            
-            // Draw on virtual canvas
-            virtualCtx.drawImage(img, x, y, img.width * scale, img.height * scale);
-            
-            // Update canvas state
-            canvasState = virtualCtx.getImageData(0, 0, virtualCanvas.width, virtualCanvas.height);
-            
-            // Update display
-            updateMainCanvas();
-        };
-        
-        img.src = e.target.result;
-    };
-    
-    reader.readAsDataURL(file);
-});
 
-document.getElementById('loadS3Btn').addEventListener('click', function() {
-    const imageKey = document.getElementById('s3ImageKey').value;
-    if (!imageKey) {
-        alert('Please enter an image key');
+    if (!filename) {
+        alert('Please enter a location');
         return;
     }
 
@@ -377,9 +103,10 @@ document.getElementById('loadS3Btn').addEventListener('click', function() {
     // When the image loads, draw it on the canvas
     img.onload = function() {
         // Reset position and rotation
-        canvasOffsetX = 0;
-        canvasOffsetY = 0;
+        canvasOffsetX = canvas.width/2;
+        canvasOffsetY = canvas.height/2;
         canvasRotation = 0;
+        zoomLevel = 4;
         
         // Clear virtual canvas
         virtualCtx.clearRect(0, 0, virtualCanvas.width, virtualCanvas.height);
@@ -412,8 +139,313 @@ document.getElementById('loadS3Btn').addEventListener('click', function() {
 
     // Construct the S3 URL and load the image
     // Replace 'your-bucket-name' and 'region' with your actual bucket name and region
-    img.src = `https://myvirtualcoral.s3.us-east-2.amazonaws.com/${imageKey}`;
+    img.src = `https://myvirtualcoral.s3.us-east-2.amazonaws.com/locations/${filename}.jpg`;
+}
+
+
+// Draw the virtual canvas onto the main canvas
+function updateMainCanvas() {
+    let centerX = canvas.width / 2;
+    let centerY = canvas.height / 2;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    //ctx.fillStyle = '#a5d8ff';
+    //ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    //Remember, we're transforming the target canvas's drawing coordinates, 
+    // not the pixels themselves.
+    ctx.save();
+    ctx.translate(canvas.width/2, canvas.height/2);
+    ctx.rotate(canvasRotation);
+    ctx.scale(zoomLevel, zoomLevel);
+    ctx.translate(-canvas.width/2, -canvas.height/2);
+    
+    ctx.drawImage(virtualCanvas, canvasOffsetX-canvas.width/2, canvasOffsetY-canvas.width/2, 500, 500, 0,0,500,500);
+    
+    ctx.restore();
+    
+    
+    //ctx.fillStyle = '#ffd8ff';
+    //const rect = canvas.getBoundingClientRect();
+    //ctx.fillRect(prevX-rect.left, prevY-rect.top, 10,10)
+
+    
+}
+
+function setZoom(newZoom) {
+    zoomLevel = newZoom;
+    updateMainCanvas();
+}
+
+
+
+// ============================================================================================================
+//                                 DRAWING WITH THE MOUSE
+// ============================================================================================================
+
+
+// Set draw to true when mouse is pressed
+window.addEventListener("mousedown", (e) => draw = true)
+// Set draw to false when mouse is released
+window.addEventListener("mouseup", (e) => draw = false)
+
+
+
+// Modified drawing function
+window.addEventListener("mousemove", (e) => {
+    if(prevX == null || prevY == null || !draw){
+        prevX = e.clientX;
+        prevY = e.clientY;
+        return;
+    }
+
+    let currentX = e.clientX;
+    let currentY = e.clientY;
+    
+    // Get canvas position
+    const rect = canvas.getBoundingClientRect();
+
+    // Convert mouse coordinates to canvas coordinates
+    let canvasX = currentX - rect.left - 35;
+    let canvasY = currentY - rect.top - 35;
+    let prevCanvasX = prevX - rect.left - 35;
+    let prevCanvasY = prevY - rect.top - 35;
+    
+    // Adjust for canvas center (rotation pivot point)
+    canvasX -= canvas.width/2;
+    canvasY -= canvas.height/2;
+    prevCanvasX -= canvas.width/2;
+    prevCanvasY -= canvas.height/2;
+
+    // Reverse Level
+    canvasX /= zoomLevel;
+    canvasY /= zoomLevel;
+    prevCanvasX /= zoomLevel;
+    prevCanvasY /= zoomLevel;
+
+    //xBox.value = Math.round(canvasX).toString() + "," + Math.round(canvasY);
+    
+    // Reverse rotation
+    let rotatedX = canvasX * Math.cos(-canvasRotation) - canvasY * Math.sin(-canvasRotation);
+    let rotatedY = canvasX * Math.sin(-canvasRotation) + canvasY * Math.cos(-canvasRotation);
+    let prevRotatedX = prevCanvasX * Math.cos(-canvasRotation) - prevCanvasY * Math.sin(-canvasRotation);
+    let prevRotatedY = prevCanvasX * Math.sin(-canvasRotation) + prevCanvasY * Math.cos(-canvasRotation);
+
+    // Add back canvas center offset
+    //rotatedX += canvas.width/2;
+    //rotatedY += canvas.height/2;
+    //prevRotatedX += canvas.width/2;
+    //prevRotatedY += canvas.height/2;
+
+    // Add pan offset
+    rotatedX += canvasOffsetX;
+    rotatedY += canvasOffsetY;
+    prevRotatedX += canvasOffsetX;
+    prevRotatedY += canvasOffsetY;
+
+    // Draw on virtual canvas
+    virtualCtx.beginPath();
+    virtualCtx.strokeStyle = ctx.strokeStyle;
+    virtualCtx.lineWidth = ctx.lineWidth;
+    virtualCtx.lineCap = ctx.lineCap;
+    virtualCtx.moveTo(prevRotatedX, prevRotatedY);
+    virtualCtx.lineTo(rotatedX, rotatedY);
+    virtualCtx.stroke();
+
+    // Update canvas state
+    canvasState = virtualCtx.getImageData(0, 0, virtualCanvas.width, virtualCanvas.height);
+    
+    // Update display
+    updateMainCanvas();
+
+    prevX = currentX;
+    prevY = currentY;
 });
+
+
+
+let xinertia = 0;
+let rinertia = 0;
+let xiamount = 500/50;
+let riamount = 2*Math.PI/50;
+
+function moveCanvas() {
+    // Store the previous offset values in case we need to revert
+    const prevOffsetX = canvasOffsetX;
+    const prevOffsetY = canvasOffsetY;
+
+    // Calculate the adjusted move amount based on Level
+    const adjustedMoveAmount = xinertia / zoomLevel;
+    
+    if (xinertia > 0) {
+        xinertia -= xiamount/10;
+        canvasOffsetX -= adjustedMoveAmount * Math.sin(canvasRotation);
+        canvasOffsetY -= adjustedMoveAmount * Math.cos(canvasRotation);
+    }
+    if (xinertia < 0){
+        xinertia += xiamount/10;
+        canvasOffsetX -= adjustedMoveAmount * Math.sin(canvasRotation);
+        canvasOffsetY -= adjustedMoveAmount * Math.cos(canvasRotation);
+    }
+
+    if (rinertia > 0){
+        rinertia -= riamount/10;
+        canvasRotation -= rinertia;
+    }
+    if (rinertia < 0){
+        rinertia += riamount/10;
+        canvasRotation -= rinertia;
+    }
+    
+    if (Math.abs(xinertia) < 1) xinertia = 0;
+    if (Math.abs(rinertia) < 0.01) rinertia = 0;
+
+    if (Math.abs(xinertia) > xiamount*3) xinertia -= xinertia/3;
+    if (Math.abs(rinertia) > riamount*2) rinertia /= 2;
+
+
+    // Calculate boundaries based on Level level
+    const maxOffsetX = virtualCanvas.width
+    const maxOffsetY = virtualCanvas.height
+
+    // Constrain the offsets
+    canvasOffsetX = Math.max(0, Math.min(maxOffsetX, canvasOffsetX));
+    canvasOffsetY = Math.max(0, Math.min(maxOffsetY, canvasOffsetY));
+    
+}
+
+
+
+
+
+// ============================================================================================================
+//                                 CONTROLS
+// ============================================================================================================
+
+
+// Add touch/mouse event listeners to nav buttons
+document.querySelectorAll('.dir div').forEach(button => {
+    // Start movement on mousedown/touchstart
+    const startMove = (e) => {
+        e.preventDefault(); // Prevent default to avoid selection
+        const direction = button.className;
+        switch (direction){
+            case 'N':
+                xinertia += xiamount;
+                break;
+            case 'S':
+                xinertia -= xiamount;
+                break;
+            case 'E':
+                rinertia += riamount;
+                break;
+            case 'W':
+                rinertia -= riamount;
+                break;
+
+        }
+
+        //moveCanvas(direction, moveAmount);
+        // Start repeating movement after a short delay
+        navIntervals[direction] = setInterval(() => {
+            //moveCanvas(direction, moveAmount);
+        }, repeatDelay);
+    };
+
+    // Stop movement on mouseup/touchend
+    const stopMove = (e) => {
+        e.preventDefault();
+        const direction = button.className;
+        if (navIntervals[direction]) {
+            clearInterval(navIntervals[direction]);
+            navIntervals[direction] = null;
+        }
+    };
+
+    // Add event listeners
+    button.addEventListener('mousedown', startMove);
+    button.addEventListener('mouseup', stopMove);
+    button.addEventListener('mouseleave', stopMove);
+    button.addEventListener('touchstart', startMove);
+    button.addEventListener('touchend', stopMove);
+});
+
+// Add keyboard controls
+document.addEventListener('keydown', (e) => {
+    switch(e.key) {
+        case 'w':
+            xinertia += xiamount;
+            break;
+        case 's':
+            xinertia -= xiamount;
+            break;
+        case 'd':
+            rinertia += riamount;
+            break;
+        case 'a':
+            rinertia -= riamount;
+            break;
+            
+        case '+':
+        case '=':
+            setZoom(zoomLevel * 1.1); // Zoom in by 10%
+            break;
+        case '-':
+            setZoom(zoomLevel / 1.1); // Zoom out by 10%
+            break;
+        
+            
+    }
+});
+
+document.getElementById('exitButton').addEventListener('click', function() {
+    window.location.href = 'index.html';
+});
+
+document.querySelectorAll('.zoom-button').forEach(button => {
+    button.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        const isZoomIn = button.classList.contains('plus');
+        
+        if (isZoomIn) {
+            setZoom(zoomLevel * 1.1); // Zoom in by 10%
+        } else {
+            setZoom(zoomLevel / 1.1); // Zoom out by 10%
+        }
+    });
+
+    // Prevent text selection on mobile
+    button.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+    });
+});
+
+// Add keyboard shortcuts for zoom
+document.addEventListener('keydown', (e) => {
+    if (e.key === '=' || e.key === '+') {
+        setZoom(zoomLevel * 1.1);
+    } else if (e.key === '-') {
+        setZoom(zoomLevel / 1.1);
+    }
+});
+
+// ============================================================================================================
+//                                 LOADING
+// ============================================================================================================
+
+
+
+// Modified save functionality
+/*
+saveBtn.addEventListener('click', () => {
+    // Use virtual canvas for saving
+    const link = document.createElement('a');
+    link.download = 'my-drawing.png';
+    link.href = virtualCanvas.toDataURL('image/png');
+    link.click();
+});
+*/
+
 
 
 // ============================================================================================================
@@ -449,11 +481,6 @@ function drawRandomPixel() {
     updateMainCanvas();
 }
 
-// Start the interval
-const pixelInterval = setInterval(drawRandomPixel, 100);
-
-// Optional: To stop it later, you can use:
-// clearInterval(pixelInterval);
 
 
 
@@ -479,7 +506,7 @@ function removeGreenPixels() {
             
             // Check if green is more than 50% of total color
             const total = r + g + b;
-            if (total < 256 && g > total / 3){
+            if (total < 256 && g > b && g > r){
                 // If green dominant, make pixel transparent
                 virtualCtx.fillStyle = `rgb(${r},${g},${b})`;
                 if (Math.random() >  0.5) virtualCtx.fillRect(x, y+1, 1, 1);
@@ -500,9 +527,6 @@ function removeGreenPixels() {
     // Update display
     updateMainCanvas();
 }
-
-// Start the interval
-const greenRemovalInterval = setInterval(removeGreenPixels, 100);
 
 
 

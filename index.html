@@ -5,56 +5,19 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
-    <title>JavaScript Drawing APP</title>
+    <title>My Virtual Coral - Submarine View</title>
 </head>
 <body>
     
-    <div class="porthole-frame">
-        <div class="bolt"></div>
-        <div class="bolt"></div>
-        <div class="bolt"></div>
-        <div class="bolt"></div>
-        <div class="bolt"></div>
-        <div class="bolt"></div>
-        <div class="bolt"></div>
-        <div class="bolt"></div>
-        <div class="bolt"></div>
-        <div class="bolt"></div>
-        <div class="bolt"></div>
-        <div class="bolt"></div>
-        <canvas id="canvas"></canvas>
-        <div class="water-effect"></div>
-    </div>
-    <div class="nav">
-        <div class="dir">
-            <div class="N">
-                <div class="arrow"></div>
-            </div>
-            <div class="W">
-                <div class="arrow"></div>
-            </div>
-            <div class="E">
-                <div class="arrow"></div>
-            </div>
-            <div class="S">
-                <div class="arrow"></div>
-            </div>
+           
+    
+    <div class="grid-container">
+        <div id="imageGrid">
+            <!-- JavaScript will populate this -->
         </div>
     </div>
 
-    <div class="controls">
-        <button id="saveBtn">Save Drawing</button>
-        <button id="loadBtn">Load Drawing</button>
-        <input type="file" id="imageLoader" accept="image/*" style="display: none;">
-        
-        <button id="loadS3Btn">Load from S3</button>
-        <input type="text" id="s3ImageKey" name="s3ImageKey" size="30" placeholder="Enter image key">
-        <input type="text" id="x" size="5">
-        <input type="text" id="y" size="5">
-    </div>
 
-                
-    
-    <script src="MyVirtualCoral.js"></script>
+    <script src="MyVirtualCoral-index.js"></script>
 </body>
 </html>

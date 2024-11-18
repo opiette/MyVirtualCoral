@@ -123,7 +123,7 @@ canvas {
 /* Add individual bolt holes */
 .porthole-frame {
     position: fixed;
-    top: 50px;
+    top: 5px;
     left: 50%;
     transform: translateX(-50%);
     /* transform: translate(-50%, -50%);*/
@@ -194,11 +194,61 @@ canvas {
 .bolt:nth-child(12) { top: 10%; left: 20%; }
 
 
+
+
+.zoom-controls {
+    position: absolute;
+    left: 10px;
+    top: 120px;
+}
+
+.zoom-button {
+    width: 40px;
+    height: 40px;
+    background-color: rgba(255, 255, 255, 0.7);
+    border: 2px solid #000;
+    border-radius: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    font-size: 24px;
+    font-weight: bold;
+    margin: 5px;
+    user-select: none;
+}
+
 body {
-    background-color: #1a1a1a;
-    min-height: 100vh;
     margin: 0;
     padding: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-color: black;
+}
+
+.grid-container {
+    width: 100%;
+    max-width: 1200px; /* Adjust this value as needed */
+    margin: 0 auto;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+#imageGrid {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(9, 1fr);
+    gap: 1px;
+    justify-content: center;
+}
+
+#imageGrid img {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1/1;
+    object-fit: cover;
+    display: block;
 }
 
 
