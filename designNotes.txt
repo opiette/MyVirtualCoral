@@ -19,3 +19,7 @@ Copyright Owen Piette 11/2024
 
 - Make the outside edges copies of the neighboring corals, but don't modify those, but do react to them!
 
+- Add years of growth on the side.
+
+
+

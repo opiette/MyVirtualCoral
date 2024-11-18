@@ -70,7 +70,7 @@
 }
 
 
-..controls {
+.controls {
     position: fixed;
     top: 20px;  /* Changed from bottom to top */
     left: 50%;
@@ -99,7 +99,17 @@
     display: none;
 }
 
-
+#saveBtn {
+    padding: 5px 10px;  /* Reduced padding */
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 14px;    /* Smaller font size */
+    margin: 5px;
+    width: 100px;
+}
 
 
 /* Add this to your style.css file */

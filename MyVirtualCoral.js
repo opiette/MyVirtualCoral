@@ -72,6 +72,8 @@ function onPageLoad() {
 // Alternatively, if you need to wait for all resources (images, etc.) to load
 window.addEventListener('load', onPageLoad);
 
+let filename = '';
+
 function LoadFromAWS(){
 
     // Create a URLSearchParams object
@@ -81,7 +83,7 @@ function LoadFromAWS(){
     //const params = Object.fromEntries(urlParams.entries());
 
     // Or get individual parameters
-    const filename = urlParams.get('location');
+    filename = urlParams.get('location');
 
     
 
@@ -436,15 +438,33 @@ document.addEventListener('keydown', (e) => {
 
 
 // Modified save functionality
-/*
-saveBtn.addEventListener('click', () => {
+
+saveBtn.addEventListener('click', async () => {
     // Use virtual canvas for saving
-    const link = document.createElement('a');
-    link.download = 'my-drawing.png';
-    link.href = virtualCanvas.toDataURL('image/png');
-    link.click();
+    // Convert canvas to blob
+    const blob = await new Promise(resolve => {
+        virtualCanvas.toBlob(resolve, 'image/jpeg');
+    });
+
+    const url = `https://myvirtualcoral.s3.us-east-2.amazonaws.com/locations/${filename}.jpg`;
+    
+    // Upload to S3
+    const uploadResponse = await fetch(url, {
+        method: 'PUT',
+        body: blob,
+        headers: {
+            'Content-Type': 'image/jpeg'
+        }
+    });
+    
+    if (!uploadResponse.ok) {
+        throw new Error('Upload failed');
+    }
+
+    // Show success message
+    alert('Saved successfully!');
 });
-*/
+
 
 
 
