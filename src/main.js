@@ -1,11 +1,17 @@
 //MyVirtualCoral.js Copyright Owen Piette 2025
 
+import {test} from './MyVirtualCoral.js';
+
+let t = new test();
+t.runn();
+
+
 const canvas = document.getElementById("canvas");
+canvas.width=500;
+canvas.height=500;
 const ctx = canvas.getContext("2d")
 const virtualCanvas = document.createElement('canvas'); // Virtual canvas for storing full image
 const virtualCtx = virtualCanvas.getContext('2d');
-const xBox = document.getElementById("x");
-const yBox = document.getElementById("y");
 const saveBtn = document.getElementById('saveBtn');
 const loadBtn = document.getElementById('loadBtn');
 const imageLoader = document.getElementById('imageLoader');
@@ -35,7 +41,7 @@ let zoomLevel = 1;  // Level
 
 
 // Initialize canvas state
-function initializeCanvasState() {
+function initializeVirtualCanvas() {
     virtualCanvas.width = 500;
     virtualCanvas.height = 500;
 
@@ -49,13 +55,10 @@ function initializeCanvasState() {
 
 // Add this function to define what happens on load
 function onPageLoad() {
-    //canvas.height = canvas.getBoundingClientRect.height;
-    //canvas.width = canvas.getBoundingClientRect.width;
-    canvas.width=500;
-    canvas.height=500;
-    ctx.lineWidth = 5
+    
+    
 
-    initializeCanvasState();
+    initializeVirtualCanvas();
     setZoom(1);
     updateMainCanvas();
 
@@ -67,25 +70,18 @@ function onPageLoad() {
     moveInterval = setInterval(moveCanvas, 100);
 }
 
-// Add this event listener to run when the DOM is fully loaded
-//document.addEventListener('DOMContentLoaded', onPageLoad);
 // Alternatively, if you need to wait for all resources (images, etc.) to load
 window.addEventListener('load', onPageLoad);
+
 
 let filename = '';
 
 function LoadFromAWS(){
-
     // Create a URLSearchParams object
     const urlParams = new URLSearchParams(window.location.search);
 
-    // Get all parameters
-    //const params = Object.fromEntries(urlParams.entries());
-
     // Or get individual parameters
     filename = urlParams.get('location');
-
-    
 
     if (!filename) {
         alert('Please enter a location');
@@ -140,7 +136,6 @@ function LoadFromAWS(){
     };
 
     // Construct the S3 URL and load the image
-    // Replace 'your-bucket-name' and 'region' with your actual bucket name and region
     img.src = `https://myvirtualcoral.s3.us-east-2.amazonaws.com/locations/${filename}.jpg`;
 }
 
@@ -165,12 +160,6 @@ function updateMainCanvas() {
     ctx.drawImage(virtualCanvas, canvasOffsetX-canvas.width/2, canvasOffsetY-canvas.width/2, 500, 500, 0,0,500,500);
     
     ctx.restore();
-    
-    
-    //ctx.fillStyle = '#ffd8ff';
-    //const rect = canvas.getBoundingClientRect();
-    //ctx.fillRect(prevX-rect.left, prevY-rect.top, 10,10)
-
     
 }
 
@@ -225,8 +214,6 @@ window.addEventListener("mousemove", (e) => {
     prevCanvasX /= zoomLevel;
     prevCanvasY /= zoomLevel;
 
-    //xBox.value = Math.round(canvasX).toString() + "," + Math.round(canvasY);
-    
     // Reverse rotation
     let rotatedX = canvasX * Math.cos(-canvasRotation) - canvasY * Math.sin(-canvasRotation);
     let rotatedY = canvasX * Math.sin(-canvasRotation) + canvasY * Math.cos(-canvasRotation);
@@ -248,7 +235,7 @@ window.addEventListener("mousemove", (e) => {
     // Draw on virtual canvas
     virtualCtx.beginPath();
     virtualCtx.strokeStyle = ctx.strokeStyle;
-    virtualCtx.lineWidth = ctx.lineWidth;
+    virtualCtx.lineWidth = 5;
     virtualCtx.lineCap = ctx.lineCap;
     virtualCtx.moveTo(prevRotatedX, prevRotatedY);
     virtualCtx.lineTo(rotatedX, rotatedY);
@@ -547,6 +534,12 @@ function removeGreenPixels() {
     // Update display
     updateMainCanvas();
 }
+
+
+
+
+
+
 
 
 
