@@ -1,23 +1,17 @@
 //MyVirtualCoral.js Copyright Owen Piette 2025
 
-import {test} from './MyVirtualCoral.js';
-
-let t = new test();
-t.runn();
+import {VirtualCanvas} from './VirtualCanvas.js';
 
 
 const canvas = document.getElementById("canvas");
 canvas.width=500;
 canvas.height=500;
 const ctx = canvas.getContext("2d")
-const virtualCanvas = document.createElement('canvas'); // Virtual canvas for storing full image
-const virtualCtx = virtualCanvas.getContext('2d');
 const saveBtn = document.getElementById('saveBtn');
 const loadBtn = document.getElementById('loadBtn');
 const imageLoader = document.getElementById('imageLoader');
-var pixelInterval;
-var greenRemovalInterval;
-var moveInterval;
+
+var updateInterval;
 
 const repeatDelay = 100; // How often the movement repeats in milliseconds
 const moveAmount = 10;
@@ -35,137 +29,71 @@ let navIntervals = {
 let canvasOffsetX = 250;
 let canvasOffsetY = 250;
 let canvasRotation = 0; // In radians
-let canvasState; // Store the complete canvas state
 let zoomLevel = 1;  // Level
 
+let vc = null;
 
-
-// Initialize canvas state
-function initializeVirtualCanvas() {
-    virtualCanvas.width = 500;
-    virtualCanvas.height = 500;
-
-    virtualCtx.fillStyle = '#a5d8ff';
-    virtualCtx.fillRect(0, 0, virtualCanvas.width, virtualCanvas.height);
-    canvasState = virtualCtx.getImageData(0, 0, virtualCanvas.width, virtualCanvas.height);
-
-    canvasOffsetX = 250;
-    canvasOffsetY = 250;
+function update(){
+    //vc.drawRandomPixel();
+    vc.analyzePixels();
+    vc.doOverlay();
+    moveCanvas();
+    updateMainCanvas();
 }
+
 
 // Add this function to define what happens on load
 function onPageLoad() {
-    
-    
+    vc = new VirtualCanvas();
+    vc.init();
+    // Create a URLSearchParams object
+    // Or get individual parameters
+    const filename = new URLSearchParams(window.location.search).get('location');
+    vc.LoadImageFromAWS(filename);
 
-    initializeVirtualCanvas();
+    canvasOffsetX = 250;
+    canvasOffsetY = 250;
     setZoom(1);
-    updateMainCanvas();
 
-    LoadFromAWS();
+    // Reset position and rotation
+    canvasOffsetX = canvas.width/2;
+    canvasOffsetY = canvas.height/2;
+    canvasRotation = 0;
+    zoomLevel = 4;
 
-    // Start the intervals
-    pixelInterval = setInterval(drawRandomPixel, 100);
-    greenRemovalInterval = setInterval(removeGreenPixels, 100);
-    moveInterval = setInterval(moveCanvas, 100);
+    updateInterval = setInterval(update, 100);
 }
 
-// Alternatively, if you need to wait for all resources (images, etc.) to load
+// Wait for all resources (images, etc.) to load
 window.addEventListener('load', onPageLoad);
 
 
-let filename = '';
 
-function LoadFromAWS(){
-    // Create a URLSearchParams object
-    const urlParams = new URLSearchParams(window.location.search);
-
-    // Or get individual parameters
-    filename = urlParams.get('location');
-
-    if (!filename) {
-        alert('Please enter a location');
-        return;
-    }
-
-    // Get the canvas and context
-    const canvas = document.getElementById('canvas'); // Make sure this matches your canvas ID
-    const ctx = canvas.getContext('2d');
-
-    // Create a new image object
-    const img = new Image();
-    
-    // Set cross-origin to anonymous to avoid CORS issues with public S3 buckets
-    img.crossOrigin = "anonymous";
-    
-    // When the image loads, draw it on the canvas
-    img.onload = function() {
-        // Reset position and rotation
-        canvasOffsetX = canvas.width/2;
-        canvasOffsetY = canvas.height/2;
-        canvasRotation = 0;
-        zoomLevel = 4;
-        
-        // Clear virtual canvas
-        virtualCtx.clearRect(0, 0, virtualCanvas.width, virtualCanvas.height);
-        virtualCtx.fillStyle = '#a5d8ff';
-        virtualCtx.fillRect(0, 0, virtualCanvas.width, virtualCanvas.height);
-        
-        // Calculate scaling
-        const scale = Math.min(
-            virtualCanvas.width / img.width,
-            virtualCanvas.height / img.height
-        );
-        
-        const x = (virtualCanvas.width - img.width * scale) / 2;
-        const y = (virtualCanvas.height - img.height * scale) / 2;
-        
-        // Draw on virtual canvas
-        virtualCtx.drawImage(img, x, y, img.width * scale, img.height * scale);
-        
-        // Update canvas state
-        canvasState = virtualCtx.getImageData(0, 0, virtualCanvas.width, virtualCanvas.height);
-        
-        // Update display
-        updateMainCanvas();
-    };
-
-    // Handle any errors
-    img.onerror = function() {
-        alert('Error loading image. Please check the image key and try again.');
-    };
-
-    // Construct the S3 URL and load the image
-    img.src = `https://myvirtualcoral.s3.us-east-2.amazonaws.com/locations/${filename}.jpg`;
-}
-
-
-// Draw the virtual canvas onto the main canvas
+// Draw the virtual canvas's backer canvas onto the main canvas
 function updateMainCanvas() {
+    vc.update();
+
     let centerX = canvas.width / 2;
     let centerY = canvas.height / 2;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    //ctx.fillStyle = '#a5d8ff';
-    //ctx.fillRect(0, 0, canvas.width, canvas.height);
-
+    
     //Remember, we're transforming the target canvas's drawing coordinates, 
     // not the pixels themselves.
     ctx.save();
-    ctx.translate(canvas.width/2, canvas.height/2);
-    ctx.rotate(canvasRotation);
-    ctx.scale(zoomLevel, zoomLevel);
-    ctx.translate(-canvas.width/2, -canvas.height/2);
+    ctx.translate(canvas.width/2, canvas.height/2);     //Move 0,0 to the center
+    ctx.rotate(canvasRotation);                         //Rotate around 0,0
+    ctx.scale(zoomLevel, zoomLevel); //Zoom
+    ctx.translate(-canvas.width/2, -canvas.height/2);     
+    ctx.drawImage(vc.bc, canvasOffsetX-canvas.width/2, canvasOffsetY-canvas.width/2, 500, 500, 0,0,500,500);
     
-    ctx.drawImage(virtualCanvas, canvasOffsetX-canvas.width/2, canvasOffsetY-canvas.width/2, 500, 500, 0,0,500,500);
+    //ctx.clearRect(-canvasOffsetX, -canvasOffsetY, 10, 10);
     
     ctx.restore();
-    
 }
 
 function setZoom(newZoom) {
     zoomLevel = newZoom;
-    updateMainCanvas();
 }
 
 
@@ -179,8 +107,6 @@ function setZoom(newZoom) {
 window.addEventListener("mousedown", (e) => draw = true)
 // Set draw to false when mouse is released
 window.addEventListener("mouseup", (e) => draw = false)
-
-
 
 // Modified drawing function
 window.addEventListener("mousemove", (e) => {
@@ -219,13 +145,7 @@ window.addEventListener("mousemove", (e) => {
     let rotatedY = canvasX * Math.sin(-canvasRotation) + canvasY * Math.cos(-canvasRotation);
     let prevRotatedX = prevCanvasX * Math.cos(-canvasRotation) - prevCanvasY * Math.sin(-canvasRotation);
     let prevRotatedY = prevCanvasX * Math.sin(-canvasRotation) + prevCanvasY * Math.cos(-canvasRotation);
-
-    // Add back canvas center offset
-    //rotatedX += canvas.width/2;
-    //rotatedY += canvas.height/2;
-    //prevRotatedX += canvas.width/2;
-    //prevRotatedY += canvas.height/2;
-
+    
     // Add pan offset
     rotatedX += canvasOffsetX;
     rotatedY += canvasOffsetY;
@@ -233,19 +153,12 @@ window.addEventListener("mousemove", (e) => {
     prevRotatedY += canvasOffsetY;
 
     // Draw on virtual canvas
-    virtualCtx.beginPath();
-    virtualCtx.strokeStyle = ctx.strokeStyle;
-    virtualCtx.lineWidth = 5;
-    virtualCtx.lineCap = ctx.lineCap;
-    virtualCtx.moveTo(prevRotatedX, prevRotatedY);
-    virtualCtx.lineTo(rotatedX, rotatedY);
-    virtualCtx.stroke();
-
-    // Update canvas state
-    canvasState = virtualCtx.getImageData(0, 0, virtualCanvas.width, virtualCanvas.height);
-    
-    // Update display
-    updateMainCanvas();
+    vc.virtualCtx.beginPath();
+    vc.virtualCtx.lineWidth = 5;
+    vc.virtualCtx.lineCap = ctx.lineCap;
+    vc.virtualCtx.moveTo(prevRotatedX, prevRotatedY);
+    vc.virtualCtx.lineTo(rotatedX, rotatedY);
+    vc.virtualCtx.stroke();
 
     prevX = currentX;
     prevY = currentY;
@@ -294,12 +207,13 @@ function moveCanvas() {
 
 
     // Calculate boundaries based on Level level
-    const maxOffsetX = virtualCanvas.width
-    const maxOffsetY = virtualCanvas.height
-
+    const edge = 250/zoomLevel;
+    const maxOffsetX = vc.virtualCanvas.width - edge;
+    const maxOffsetY = vc.virtualCanvas.height - edge;
+    
     // Constrain the offsets
-    canvasOffsetX = Math.max(0, Math.min(maxOffsetX, canvasOffsetX));
-    canvasOffsetY = Math.max(0, Math.min(maxOffsetY, canvasOffsetY));
+    canvasOffsetX = Math.max(edge, Math.min(maxOffsetX, canvasOffsetX));
+    canvasOffsetY = Math.max(edge, Math.min(maxOffsetY, canvasOffsetY));
     
 }
 
@@ -381,10 +295,9 @@ document.addEventListener('keydown', (e) => {
             break;
         case '-':
             setZoom(zoomLevel / 1.1); // Zoom out by 10%
-            break;
-        
-            
+            break;           
     }
+   
 });
 
 document.getElementById('exitButton').addEventListener('click', function() {
@@ -401,6 +314,7 @@ document.querySelectorAll('.zoom-button').forEach(button => {
         } else {
             setZoom(zoomLevel / 1.1); // Zoom out by 10%
         }
+        
     });
 
     // Prevent text selection on mobile
@@ -416,10 +330,11 @@ document.addEventListener('keydown', (e) => {
     } else if (e.key === '-') {
         setZoom(zoomLevel / 1.1);
     }
+    
 });
 
 // ============================================================================================================
-//                                 LOADING
+//                                 SAVING
 // ============================================================================================================
 
 
@@ -427,113 +342,13 @@ document.addEventListener('keydown', (e) => {
 // Modified save functionality
 
 saveBtn.addEventListener('click', async () => {
-    // Use virtual canvas for saving
-    // Convert canvas to blob
-    const blob = await new Promise(resolve => {
-        virtualCanvas.toBlob(resolve, 'image/jpeg');
-    });
-
-    const url = `https://myvirtualcoral.s3.us-east-2.amazonaws.com/locations/${filename}.jpg`;
-    
-    // Upload to S3
-    const uploadResponse = await fetch(url, {
-        method: 'PUT',
-        body: blob,
-        headers: {
-            'Content-Type': 'image/jpeg'
-        }
-    });
-    
-    if (!uploadResponse.ok) {
-        throw new Error('Upload failed');
-    }
-
-    // Show success message
-    alert('Saved successfully!');
+    const filename = new URLSearchParams(window.location.search).get('location');
+    vc.Save(filename);
+   
 });
 
 
 
-
-// ============================================================================================================
-//                                 ENVIRONMENT EFFECTS
-// ============================================================================================================
-
-function drawRandomPixel() {
-    // Generate random coordinates within canvas bounds
-    const x = Math.floor(Math.random() * virtualCanvas.width);
-    const y = Math.floor(Math.random() * virtualCanvas.height);
-    
-    // Generate random RGB colors
-    const r = Math.floor(Math.random() * 256);
-    const g = Math.floor(Math.random() * 256);
-    const b = Math.floor(Math.random() * 256);
-    
-    // Save the current virtual context state
-    virtualCtx.save();
-    
-    // Set fill style to random color
-    virtualCtx.fillStyle = `rgb(${r},${g},${b})`;
-    
-    // Draw 1px rectangle (pixel)
-    virtualCtx.fillRect(x, y, 1, 1);
-    
-    // Restore the context state
-    virtualCtx.restore();
-    
-    // Update canvas state
-    canvasState = virtualCtx.getImageData(0, 0, virtualCanvas.width, virtualCanvas.height);
-    
-    // Update main canvas display
-    updateMainCanvas();
-}
-
-
-
-
-function removeGreenPixels() {
-    // Get the image data from virtual canvas
-    const imageData = virtualCtx.getImageData(0, 0, virtualCanvas.width, virtualCanvas.height);
-    const data = imageData.data;
-    
-    let scanOffsetX = Math.floor(Math.random() * 10);
-    let scanOffsetY = Math.floor(Math.random() * 10);
-    let scanOffsetD1 = 10+Math.floor(Math.random() * 10);
-    let scanOffsetD2 = 10+Math.floor(Math.random() * 10);
-
-    // Check every 10th pixel
-    for (let y = scanOffsetY; y < virtualCanvas.height; y += scanOffsetD1) {
-        for (let x = scanOffsetX; x < virtualCanvas.width; x += scanOffsetD2) {
-            const index = (y * virtualCanvas.width + x) * 4;
-            
-            // Get RGB values
-            const r = data[index];
-            const g = data[index + 1];
-            const b = data[index + 2];
-            
-            // Check if green is more than 50% of total color
-            const total = r + g + b;
-            if (total < 256 && g > b && g > r){
-                // If green dominant, make pixel transparent
-                virtualCtx.fillStyle = `rgb(${r},${g},${b})`;
-                if (Math.random() >  0.5) virtualCtx.fillRect(x, y+1, 1, 1);
-                if (Math.random() >  0.5) virtualCtx.fillRect(x+1, y+1, 1, 1);
-                if (Math.random() >  0.5) virtualCtx.fillRect(x+1, y, 1, 1);
-                if (Math.random() >  0.5) virtualCtx.fillRect(x+1, y+1, 1, 1);
-                if (Math.random() >  0.5) virtualCtx.fillRect(x, y-1, 1, 1);
-                if (Math.random() >  0.5) virtualCtx.fillRect(x-1, y-1, 1, 1);
-                if (Math.random() >  0.5) virtualCtx.fillRect(x-1, y, 1, 1);
-                if (Math.random() >  0.5) virtualCtx.fillRect(x-1, y+1, 1, 1);
-            }
-        }
-    }
-    
-    // Update canvas state
-    canvasState = virtualCtx.getImageData(0, 0, virtualCanvas.width, virtualCanvas.height);
-    
-    // Update display
-    updateMainCanvas();
-}
 
 
 
