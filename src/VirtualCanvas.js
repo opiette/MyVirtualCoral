@@ -1,3 +1,4 @@
+
 class Item {
     type; //0=nothing? 1=food speck, 2=fish
     x;
@@ -9,8 +10,42 @@ class Item {
     height;
 }
 
+
+
+
+
 export class VirtualCanvas{
     
+    boatdata = {
+        "name":"boat",
+        "color":"00,00,00",
+        "width":20,
+        "height":20,
+        "bitmap":
+        [
+        "00000000111000000000",
+        "00000001111100000000",
+        "00000011111110000000",
+        "01100111111111001100",
+        "11111111111111111110",
+        "11111111111111111110",
+        "01100111111111001100",
+        "00000011111110000000",
+        "00000001111100000000",
+        "00000000111000000000",
+        "00000001010100000000",
+        "00000011101110000000",
+        "00000001000100000000",
+        "00000000000000000000",
+        "00000000000000000000",
+        "00000000000000000000",
+        "00000000000000000000",
+        "00000000000000000000",
+        "00000000000000000000",
+        "00000000000000000000"
+        ]
+        }
+
     virtualCanvas = null;
     virtualCtx = null;
     img;
@@ -23,46 +58,6 @@ export class VirtualCanvas{
 
     foodCounterElement;
 
-    doOverlay(){
-        //Generate new items
-        if (Math.random() < 0.5){
-            let item = new Item();
-            item.type = 1; // food speck
-            item.color = [Math.floor(Math.random()*256), Math.floor(Math.random()*256), Math.floor(Math.random()*256)];
-            this.overlayItems.push(item);
-            item.x = Math.floor(Math.random()*this.virtualCanvas.width);
-            item.y = Math.floor(Math.random()*this.virtualCanvas.width);
-            this.NumberOfFood += 1;
-        }
-    }
-
-    //Draw data canvas and overlay items onto backer canvas
-    update(){
-        this.bctx.drawImage(this.virtualCanvas, 0, 0, 500, 500, 0, 0, 500, 500);
-
-        for (let i = this.overlayItems.length-1; i > 0; i--) {
-            const item = this.overlayItems[i];
-
-            if (item.type == 1){
-                this.bctx.fillStyle = `rgb(${item.color[0]}, ${item.color[1]}, ${item.color[2]})`;
-                this.bctx.fillRect(item.x, item.y, 1, 1);
-            }
-            if (Math.random() < 0.5) item.x += 1;
-            if (Math.random() < 0.5) item.y += 1;
-            
-            
-            if (item.type == 0) {
-                this.overlayItems.splice(i, 1);
-            }
-        }
-
-        if (this.foodCounterElement) {
-            this.foodCounterElement.innerHTML = ``;
-            this.foodCounterElement.innerHTML += `Coral: ${this.NumberOfCorals}<br/>`;
-            this.foodCounterElement.innerHTML += `Food: ${this.NumberOfFood}<br/>`;
-            //this.foodCounterElement.innerHTML += `len: ${this.overlayItems.length}<br/>`;
-        }
-    }
 
     init(){
         this.virtualCanvas = document.createElement('canvas'); // Virtual canvas for storing full image
@@ -223,6 +218,98 @@ export class VirtualCanvas{
         return false;
     }
 
+
+    doOverlay(){
+        //Generate new items
+        if (Math.random() < 0.05){
+            let item = new Item();
+            item.type = 1; // loose coral
+            item.color = [Math.floor(Math.random()*256), Math.floor(Math.random()*256), Math.floor(Math.random()*256)];
+            this.overlayItems.push(item);
+            item.x = Math.floor(Math.random()*this.virtualCanvas.width);
+            item.y = Math.floor(Math.random()*this.virtualCanvas.width);
+            this.NumberOfCoral += 1;
+        }
+
+        if (Math.random() < 0.5){
+            let item = new Item();
+            item.type = 2; // food speck
+            item.color = [100, 100+Math.floor(Math.random()*156), 100];
+            this.overlayItems.push(item);
+            item.x = Math.floor(Math.random()*this.virtualCanvas.width);
+            item.y = Math.floor(Math.random()*this.virtualCanvas.width);
+            this.NumberOfFood += 1;
+        }
+
+    }
+
+    //Draw data canvas and overlay items onto backer canvas
+    update(canvasOffsetX, canvasOffsetY, canvasRotation){
+        this.bctx.drawImage(this.virtualCanvas, 0, 0, 500, 500, 0, 0, 500, 500);
+
+        for (let i = this.overlayItems.length-1; i > 0; i--) {
+            const item = this.overlayItems[i];
+
+            if (item.type == 1){
+                this.bctx.fillStyle = `rgb(${item.color[0]}, ${item.color[1]}, ${item.color[2]})`;
+                this.bctx.fillRect(item.x, item.y, 1, 1);
+                if (Math.random() < 0.5) item.x += 1;
+                if (Math.random() < 0.5) item.y += 1;
+            }
+            if (item.type == 2){
+                this.bctx.fillStyle = `rgb(${item.color[0]}, ${item.color[1]}, ${item.color[2]})`;
+                this.bctx.fillRect(item.x, item.y, 1, 1);
+                if (Math.random() < 0.5) item.x += 1;
+                if (Math.random() < 0.5) item.y += 1;
+            }
+            
+            
+            if (item.type == 0) {
+                this.overlayItems.splice(i, 1);
+            }
+        }
+
+        if (this.foodCounterElement) {
+            this.foodCounterElement.innerHTML = ``;
+            this.foodCounterElement.innerHTML += `Coral: ${this.NumberOfCorals}<br/>`;
+            this.foodCounterElement.innerHTML += `Food: ${this.NumberOfFood}<br/>`;
+            //this.foodCounterElement.innerHTML += `len: ${this.overlayItems.length}<br/>`;
+        }
+
+        let bc = document.createElement('canvas');
+        let bbctx = bc.getContext("2d");
+        bbctx.save();
+        bbctx.translate(this.boatdata.width/2, this.boatdata.height/2);
+        bbctx.rotate(-canvasRotation);
+        bbctx.translate(-this.boatdata.width/2, -this.boatdata.height/2);
+        bbctx.width = this.boatdata.width;
+        bbctx.height = this.boatdata.height;
+        
+        for (let y=0; y<this.boatdata.bitmap.length; ++y){
+            for (let x=0; x<this.boatdata.bitmap[y].length; ++x){
+                if (this.boatdata.bitmap[y][x] > 0) {
+                    bbctx.fillStyle = `rgb(${this.boatdata.color})`;
+                    bbctx.fillRect(x, y, 1, 1);
+                }
+            }
+        }
+        
+        this.bctx.drawImage(bc, canvasOffsetX-10, canvasOffsetY-10);
+        bbctx.restore();
+        
+        //Check to see if it hit a reef
+        let c = this.virtualCtx.getImageData(canvasOffsetX, canvasOffsetY,1,1).data;
+        if (VirtualCanvas.isCoral(c,0,0,0)){
+            if (Math.random() < 0.1){
+                this.virtualCtx.fillStyle = `rgb(0, 33, 125)`;
+                this.virtualCtx.fillRect(canvasOffsetX-10+Math.random()*20, canvasOffsetY-10+Math.random()*20, 1, 1);
+            }
+            return false;
+        }
+        return true;
+
+    }
+
     analyzePixels() {
         // Get the image data from virtual canvas
         const imageData = this.virtualCtx.getImageData(0, 0, this.virtualCanvas.width, this.virtualCanvas.height);
@@ -258,22 +345,7 @@ export class VirtualCanvas{
                     }
 
                 }
-/*
-                // Check if green is more than 50% of total color
-                const total = r + g + b;
-                if (total < 256 && b < r && b < g){
-                    // If green dominant, make pixel transparent
-                    this.virtualCtx.fillStyle = `rgb(${r},${g},${b})`;
-                    if (Math.random() >  0.5) this.virtualCtx.fillRect(x, y+1, 1, 1);
-                    if (Math.random() >  0.5) this.virtualCtx.fillRect(x+1, y+1, 1, 1);
-                    if (Math.random() >  0.5) this.virtualCtx.fillRect(x+1, y, 1, 1);
-                    if (Math.random() >  0.5) this.virtualCtx.fillRect(x+1, y+1, 1, 1);
-                    if (Math.random() >  0.5) this.virtualCtx.fillRect(x, y-1, 1, 1);
-                    if (Math.random() >  0.5) this.virtualCtx.fillRect(x-1, y-1, 1, 1);
-                    if (Math.random() >  0.5) this.virtualCtx.fillRect(x-1, y, 1, 1);
-                    if (Math.random() >  0.5) this.virtualCtx.fillRect(x-1, y+1, 1, 1);
-                }
-*/
+
             }
         }
         
@@ -281,8 +353,38 @@ export class VirtualCanvas{
         for (let i = 0; i < this.overlayItems.length; i++) {
             const item = this.overlayItems[i];
     
-            //Do the food interaction
+            //loose coral
             if (item.type == 1){
+                const index = (item.y * this.virtualCanvas.width + item.x) * 4;
+                if (item.x > this.virtualCanvas.width || item.x < 0 || item.y > this.virtualCanvas.height || item.y < 0) {
+                    item.type = 0;
+                    this.NumberOfCorals -= 1;
+                }
+
+                // Get RGB values
+                const r = data[index];
+                const g = data[index + 1];
+                const b = data[index + 2];
+                
+                //See hue color wheel
+                if (VirtualCanvas.isCoral(data, item.x, item.y, this.virtualCanvas.width)) {
+                    if (Math.random() < 0.25){
+                        const nr = (2*r+item.color[0])/3;
+                        const ng = (2*g+item.color[1])/3;
+                        const nb = (2*b+item.color[2])/3;
+
+                        //Then grow the coral!
+                        this.virtualCtx.fillStyle = `rgb(${r},${g},${b})`;
+                        this.virtualCtx.fillRect(item.x, item.y, 1, 1);
+                        
+                        item.type = 0;
+                        
+                    }
+                }
+            }
+
+            //Food
+            if (item.type == 2){
                 const index = (item.y * this.virtualCanvas.width + item.x) * 4;
                 if (item.x > this.virtualCanvas.width || item.x < 0 || item.y > this.virtualCanvas.height || item.y < 0) {
                     item.type = 0;
@@ -297,19 +399,13 @@ export class VirtualCanvas{
                 //See hue color wheel
                 if (VirtualCanvas.isCoral(data, item.x, item.y, this.virtualCanvas.width)) {
                     if (Math.random() < 0.25){
-                        const nr = (9*r+item.color[0])/10;
-                        const ng = (9*g+item.color[1])/10;
-                        const nb = (9*b+item.color[2])/10;
+                        const nr = (2*r+item.color[0])/3;
+                        const ng = (2*g+item.color[1])/3;
+                        const nb = (2*b+item.color[2])/3;
 
                         //Then grow the coral!
-                        this.virtualCtx.fillStyle = `rgb(${nr},${ng},${nb})`;
-                        this.virtualCtx.strokeStyle = `rgb(${nr-10},${ng-10},${nb-10})`
-                        this.virtualCtx.lineWidth = 1;  
-                        // Draw the circle
-                        this.virtualCtx.beginPath();
-                        this.virtualCtx.arc(item.x, item.y, 2, 0, 2 * Math.PI);
-                        this.virtualCtx.fill();
-                        this.virtualCtx.stroke();
+                        this.virtualCtx.fillStyle = `rgb(${r},${g},${b})`;
+                        this.virtualCtx.fillRect(item.x, item.y, 1, 1);
                         
                         item.type = 0;
                         this.NumberOfCorals += 1;
@@ -317,6 +413,10 @@ export class VirtualCanvas{
                     }
                 }
             }
+
+
+            
+
         }
     }
 

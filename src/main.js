@@ -71,13 +71,18 @@ window.addEventListener('load', onPageLoad);
 
 // Draw the virtual canvas's backer canvas onto the main canvas
 function updateMainCanvas() {
-    vc.update();
+    let r = vc.update(canvasOffsetX, canvasOffsetY, canvasRotation);
+
+    if (r == false){
+        xinertia *= -0.5;
+        rinertia *= 0.5;
+    }
 
     let centerX = canvas.width / 2;
     let centerY = canvas.height / 2;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
+
     //Remember, we're transforming the target canvas's drawing coordinates, 
     // not the pixels themselves.
     ctx.save();
@@ -87,9 +92,11 @@ function updateMainCanvas() {
     ctx.translate(-canvas.width/2, -canvas.height/2);     
     ctx.drawImage(vc.bc, canvasOffsetX-canvas.width/2, canvasOffsetY-canvas.width/2, 500, 500, 0,0,500,500);
     
-    //ctx.clearRect(-canvasOffsetX, -canvasOffsetY, 10, 10);
+    //ctx.clearRect(canvasOffsetX, canvasOffsetY, 10, 10);
     
     ctx.restore();
+
+    
 }
 
 function setZoom(newZoom) {
@@ -153,12 +160,14 @@ window.addEventListener("mousemove", (e) => {
     prevRotatedY += canvasOffsetY;
 
     // Draw on virtual canvas
+    /*
     vc.virtualCtx.beginPath();
     vc.virtualCtx.lineWidth = 5;
     vc.virtualCtx.lineCap = ctx.lineCap;
     vc.virtualCtx.moveTo(prevRotatedX, prevRotatedY);
     vc.virtualCtx.lineTo(rotatedX, rotatedY);
     vc.virtualCtx.stroke();
+    */
 
     prevX = currentX;
     prevY = currentY;
